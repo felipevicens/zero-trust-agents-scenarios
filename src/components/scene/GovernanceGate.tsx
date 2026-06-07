@@ -7,6 +7,7 @@ export interface GateProps {
   position: { x: number; y: number };
   result: "pass" | "fail";
   onDone?: () => void;
+  speed?: 0.5 | 1 | 2;
 }
 
 type GatePhase = "evaluating" | "resolved" | "exiting";
@@ -37,23 +38,27 @@ function wrapLabel(text: string, maxChars: number): string[] {
   return lines;
 }
 
-export function GovernanceGate({ kind, position, result, onDone }: GateProps) {
+export function GovernanceGate({ kind, position, result, onDone, speed = 1 }: GateProps) {
   const [phase, setPhase] = useState<GatePhase>("evaluating");
   const { x, y } = position;
 
+  const evalMs = EVAL_MS / speed;
+  const holdMs = HOLD_MS / speed;
+  const animMs = ANIM_MS / speed;
+
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase("resolved"), EVAL_MS);
+    const t1 = setTimeout(() => setPhase("resolved"), evalMs);
     return () => clearTimeout(t1);
-  }, []);
+  }, [evalMs]);
 
   useEffect(() => {
     if (phase !== "resolved") return;
     const t2 = setTimeout(() => {
       setPhase("exiting");
-      setTimeout(() => onDone?.(), ANIM_MS);
-    }, HOLD_MS);
+      setTimeout(() => onDone?.(), animMs);
+    }, holdMs);
     return () => clearTimeout(t2);
-  }, [phase, onDone]);
+  }, [phase, onDone, holdMs, animMs]);
 
   const isExiting  = phase === "exiting";
   const isResolved = phase === "resolved";
@@ -71,7 +76,7 @@ export function GovernanceGate({ kind, position, result, onDone }: GateProps) {
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: isExiting ? 0 : 1, opacity: isExiting ? 0 : 1 }}
       style={{ transformOrigin: `${x}px ${y}px` }}
-      transition={{ duration: ANIM_MS / 1000, ease: "backOut" }}
+      transition={{ duration: animMs / 1000, ease: "backOut" }}
     >
       {/* Amber shimmer halo during evaluation */}
       {phase === "evaluating" && (
@@ -79,7 +84,7 @@ export function GovernanceGate({ kind, position, result, onDone }: GateProps) {
           cx={x} cy={y} r={S * 1.5}
           fill={colors.stateGate}
           animate={{ fillOpacity: [0, 0.2, 0] }}
-          transition={{ duration: 0.9, repeat: Infinity }}
+          transition={{ duration: 0.9 / speed, repeat: Infinity }}
           fillOpacity={0}
         />
       )}
@@ -91,7 +96,7 @@ export function GovernanceGate({ kind, position, result, onDone }: GateProps) {
           fill={result === "pass" ? colors.statePass : colors.stateBlock}
           initial={{ fillOpacity: 0 }}
           animate={{ fillOpacity: [0, 0.28, 0.1] }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: 0.4 / speed }}
           fillOpacity={0}
         />
       )}
@@ -117,7 +122,7 @@ export function GovernanceGate({ kind, position, result, onDone }: GateProps) {
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           style={{ pointerEvents: "none", transformOrigin: `${x}px ${y}px` }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: 0.25 / speed }}
         >
           {result === "pass" ? "✓" : "✗"}
         </motion.text>

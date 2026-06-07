@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, type TargetAndTransition } from "framer-motion";
+import { motion, useReducedMotion, type TargetAndTransition } from "framer-motion";
 import type { Agent, AgentState } from "../../data/agents";
 import { colors } from "../../lib/colors";
 import { useHover } from "./HoverContext";
@@ -119,6 +119,7 @@ function getAuraOpacityTransition(state: AgentState): object {
 export function AgentCard({ agent, state = "idle" }: AgentCardProps) {
   const [localHover, setLocalHover] = useState(false);
   const { setHoveredAgentId } = useHover();
+  const prefersReducedMotion = useReducedMotion();
   const { position, name, description } = agent;
   const { x: cx, y: cy } = position;
 
@@ -153,8 +154,8 @@ export function AgentCard({ agent, state = "idle" }: AgentCardProps) {
           strokeWidth={1.5}
           strokeDasharray={aura.dasharray}
           strokeOpacity={aura.strokeOpacity}
-          animate={{ fillOpacity: getAuraOpacityAnimate(state) }}
-          transition={getAuraOpacityTransition(state)}
+          animate={{ fillOpacity: prefersReducedMotion ? aura.fillOpacity : getAuraOpacityAnimate(state) }}
+          transition={prefersReducedMotion ? { duration: 0 } : getAuraOpacityTransition(state)}
           initial={{ fillOpacity: aura.fillOpacity }}
         />
       )}

@@ -1,27 +1,46 @@
-// Placeholder footer — populated in Phase 3 (CaptionPanel, PlaybackControls, Legend)
+import { ScenarioSelector } from "../header/ScenarioSelector";
+import { CaptionPanel } from "./CaptionPanel";
+import { PlaybackControls } from "./PlaybackControls";
+
+function Divider() {
+  return (
+    <div
+      style={{
+        width: "1px",
+        height: "44px",
+        background: "var(--border-subtle)",
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
 export function Footer() {
   return (
     <footer
       style={{
-        height: "60px",
+        height: "108px",
         background: "var(--bg-surface)",
         borderTop: "1px solid var(--border-subtle)",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
+        padding: "0 24px",
+        gap: "16px",
         flexShrink: 0,
       }}
     >
-      <p
-        style={{
-          margin: 0,
-          fontSize: "13px",
-          color: "var(--text-muted)",
-          fontFamily: "JetBrains Mono, monospace",
-        }}
-      >
-        Pick a scenario to begin.
-      </p>
+      {/* Left: scenario pills */}
+      <ScenarioSelector />
+
+      <Divider />
+
+      {/* Center: step counter + scenario title + caption */}
+      <CaptionPanel />
+
+      <Divider />
+
+      {/* Right: speed + nav buttons */}
+      <PlaybackControls />
     </footer>
   );
 }

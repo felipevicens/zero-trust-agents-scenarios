@@ -8,6 +8,7 @@ export const colors = {
 
   kagentPurple:     "#6c3fc5",
   kagentPurpleGlow: "#8b5cf6",
+  kagentPurpleSoft: "#9f7aea",
 
   stateActive:      "#3b82f6",
   stateGate:        "#f59e0b",

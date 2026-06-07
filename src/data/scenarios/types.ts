@@ -6,6 +6,14 @@ export type StepKind =
   | "adversarial"
   | "trace";
 
+export interface DynamicNodeSpec {
+  id: string;
+  x: number;
+  y: number;
+  type: "rogue-process" | "shadow-mcp";
+  label: string;
+}
+
 export interface ScenarioStep {
   id: string;
   kind: StepKind;
@@ -15,6 +23,12 @@ export interface ScenarioStep {
   gateLabel?: string;
   gateResult?: "pass" | "fail";
   durationMs?: number;
+  /** Materialize a dynamic node (S3 rogue-process, S6 shadow-mcp) when this step runs */
+  dynamicNode?: DynamicNodeSpec;
+  /** Override the auto-computed gate diamond position (for non-cluster actors) */
+  gatePositionOverride?: { x: number; y: number };
+  /** On trace steps: explicitly clear the adversarial attempt line (default: keep it) */
+  clearAdversarialLine?: true;
 }
 
 export interface Scenario {

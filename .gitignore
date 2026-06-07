@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build output — Vercel builds this from source
+dist/
+
+# Local dev / editor artifacts
+.DS_Store
+*.local
+pnpm-debug.log*
+*.log
+
+# Claude Code local settings (project-specific, not shared)
+.claude/
+
+# One-off screenshots / test images committed by mistake
+imagen.png

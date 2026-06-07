@@ -1,8 +1,13 @@
 import { Header } from "./components/header/Header";
 import { Scene } from "./components/scene/Scene";
 import { Footer } from "./components/footer/Footer";
+import { useScenarioPlayer } from "./hooks/useScenarioPlayer";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
 export function App() {
+  useScenarioPlayer();
+  useKeyboardShortcuts();
+
   return (
     <div
       style={{
@@ -19,7 +24,7 @@ export function App() {
         style={{
           flex: 1,
           minHeight: "0",
-          padding: "16px 24px",
+          padding: "6px 8px",
           display: "flex",
           alignItems: "stretch",
         }}
