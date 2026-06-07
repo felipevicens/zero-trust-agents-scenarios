@@ -1,0 +1,62 @@
+/* Fonts must be imported before any @tailwind directives (PostCSS CSS spec requirement) */
+@import "./tokens.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/jetbrains-mono/400.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Connection flow animation */
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.connection {
+  stroke-dasharray: 6 4;
+  stroke-dashoffset: 0;
+  /* opacity is controlled via inline style in Connection.tsx */
+  transition: opacity 300ms, stroke 300ms;
+}
+
+.connection--flowing {
+  opacity: 1;
+  animation: dash-flow 1.2s linear infinite;
+}
+
+.connection--permitted {
+  stroke: var(--state-pass);
+}
+
+.connection--blocked {
+  stroke: var(--state-block);
+  animation-duration: 0.8s;
+}
+
+.connection--adversarial {
+  stroke: var(--state-adversarial);
+  stroke-dasharray: 10 5;
+}

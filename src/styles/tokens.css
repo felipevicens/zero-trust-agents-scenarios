@@ -1,0 +1,27 @@
+:root {
+  /* Base */
+  --bg-deep:       #0a0a14;
+  --bg-surface:    #12122a;
+  --bg-card:       #1a1a2e;
+  --border-subtle: #2d2d5e;
+
+  /* Brand */
+  --kagent-purple:      #6c3fc5;
+  --kagent-purple-glow: #8b5cf6;
+
+  /* Semantic — scenario states */
+  --state-active:      #3b82f6;
+  --state-gate:        #f59e0b;
+  --state-pass:        #10b981;
+  --state-block:       #ef4444;
+  --state-adversarial: #fb923c;
+  --state-trace:       #a855f7;
+
+  /* MCP / external */
+  --mcp-healthy: #00d4aa;
+
+  /* Text */
+  --text-primary:   #f5f5fa;
+  --text-secondary: #a0a0c0;
+  --text-muted:     #6c6c8a;
+}
