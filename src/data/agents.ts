@@ -1,5 +1,7 @@
 export type Cluster = "tools" | "datacenter" | "monitoring";
 
+export type AgentState = "idle" | "active" | "gate" | "passed" | "blocked" | "adversarial" | "trace" | "dimmed";
+
 export interface Agent {
   id: string;
   name: string;

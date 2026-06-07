@@ -37,9 +37,9 @@ pnpm typecheck        # tsc --noEmit (strict mode, no any, no @ts-ignore)
 
 | Phase | Branch | Status |
 |---|---|---|
-| 1 — Static scene | `phase-1/static-scene` | ✅ **COMPLETE** |
-| 2 — Animation primitives | `phase-2/animation-primitives` | 🔲 Next |
-| 3 — Playback engine + S1 | `phase-3/playback-engine` | 🔲 |
+| 1 — Static scene + visual polish | `phase-1/static-scene` | ✅ **COMPLETE** |
+| 2 — Animation primitives | `phase-2/animation-primitives` | ✅ **COMPLETE** |
+| 3 — Playback engine + S1 | `phase-3/playback-engine` | 🔄 **NEXT** |
 | 4 — Scenarios S2–S6 | `phase-4/remaining-scenarios` | 🔲 |
 | 5 — Polish | `phase-5/polish` | 🔲 |
 
@@ -88,11 +88,14 @@ The app is a single-page static site. State will live in one Zustand store (`src
 | `monitoring-mcp` | 1420 | 520 | monitoring |
 
 ### Floor geometry
-- Shape: SVG `<polygon>`, shallow parallelogram, **not** a CSS-transformed div
+- Shape: SVG `<path>` via `roundedParallelogramPath()` in `lib/geometry.ts` — **not** `<polygon>`
 - Skew: top edge shifts +48px right vs bottom edge (15° x-axis only)
+- Corner radius: `r=14` (quadratic bézier arcs at each corner)
 - Vertices for `(cx, cy, W, H)`: `(cx-W/2, cy+H/2)` `(cx+W/2, cy+H/2)` `(cx+W/2+48, cy-H/2)` `(cx-W/2+48, cy-H/2)`
-- Extrusion: same shape offset +16px y, filled `--bg-deep`
-- Drop shadow: `filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4))`
+- Extrusion: same shape at `cy+16`, filled `--bg-deep`, `strokeOpacity=0.25`
+- Top face stroke: `--kagent-purple-glow` at full opacity + `drop-shadow(0 0 9px rgba(139,92,246,0.6))`
+- Outer drop shadow: `filter: drop-shadow(0 20px 48px rgba(0,0,0,0.85))`
+- Kubernetes logo (32×32) at top-right corner: `cx = cx+W/2+48-20`, `cy = cy-H/2+20`
 
 ## Visual Rules (non-negotiable)
 
@@ -105,25 +108,69 @@ The app is a single-page static site. State will live in one Zustand store (`src
 
 ## Connection Opacity Rules
 
-- **Base (idle):** `opacity: 0.4` — set via inline `style`, not SVG attribute (CSS class wins otherwise)
+- **Base (idle):** `opacity: 0.6` — set via inline `style`, not SVG attribute (CSS class wins otherwise)
 - **Hover — highlighted:** `opacity: 1.0` + purple glow filter
 - **Flowing (animation):** `opacity: 1.0`
 - The `.connection` CSS class in `globals.css` does NOT set opacity (removed to avoid conflict)
 
-## Agent Node Visual (Phase 1 final design)
+## Connection Endpoint Dots
+
+- Small circles (`r=3.5`) rendered at each connection endpoint
+- Position: **perimeter of the node**, not the center — offset along the **Bézier tangent** at that endpoint (not the straight-line vector)
+- `fromRadius=28` for agents (just outside 54/2=27px logo), `fromRadius=42` for MCP hexagons
+- Base: `opacity=0.65`, no filter; Hover: `opacity=1.0` + `url(#dot-glow)` SVG filter (defined in `Scene.tsx` defs)
+- Glow filter id: `dot-glow` — `feGaussianBlur stdDeviation=3.5` + `feMerge`
+
+## Agent Node Visual (final — post visual polish)
 
 ```
-      [kagent-logo 36×36]     ← /public/kagent-logo.png
-         agent-name           ← 16px Inter, textAnchor="middle", below logo
+      [kagent-logo 54×54]     ← /public/kagent-logo.png
+         agent-name           ← 16px Inter, textAnchor="middle", fill=textPrimary, below logo
 ```
 
 - **No background rect/box** — nodes are logo + label only
-- Hover: subtle purple glow circle behind logo + description tooltip above
-- On hover: connected line opacity → 1.0; other lines stay at 0.4
+- Hover: purple glow circle behind logo (`r=LOGO_SIZE*0.9`) + description tooltip above
+- **No glow circle at rest** — circle only appears on hover
+- Agent name always `textPrimary` (#f5f5fa), `fontWeight=400` at rest, `600` on hover
+- On hover: connected line opacity → 1.0; other lines stay at 0.6
 
-## Agent States (Framer Motion variants — Phase 2)
+## Agent States (Framer Motion — implemented Phase 2)
 
-`idle` | `active` (blue glow) | `gate` (amber shimmer) | `passed` (green pulse) | `blocked` (red shake) | `adversarial` (dashed orange wobble) | `trace` (purple glow) | `dimmed` (opacity 0.35)
+`idle` | `active` (blue pulse aura, 1.5s loop) | `gate` (amber shimmer aura, 0.9s loop) | `passed` (green aura + ✓ overlay) | `blocked` (red aura + ✗ overlay + 0.8s shake) | `adversarial` (dashed orange ring + 1.2s wobble loop) | `trace` (purple glow aura) | `dimmed` (opacity 0.35, 300ms)
+
+- `AgentCard` accepts `state?: AgentState` prop (default `idle`)
+- All transitions on `motion.g` wrapper + `motion.circle` aura; `transformOrigin` set to node center
+- `AgentState` type exported from `src/data/agents.ts`
+
+## GovernanceGate (Phase 2)
+
+- SVG diamond, S=30 (60×60 bounding box per spec)
+- **Label rendered below the diamond** (not inside) at 13px, up to 20 chars/line
+- Inside diamond: `?` while evaluating, large `✓`/`✗` after resolve
+- Lifecycle: appear (scale 0→1, 300ms) → evaluate (amber shimmer halo, 900ms) → resolve (green/red fill + glow pop) → hold 1500ms → fade + `onDone()`
+- Multiple gates can stack simultaneously (unique IDs via `useRef` counter)
+- Wrapped in `<AnimatePresence>` in `Scene.tsx`
+
+## GovernanceGate preset positions (DevPanel)
+
+| Preset | SVG x | SVG y | Notes |
+|---|---|---|---|
+| Above TOOLS | 314 | 155 | cx+24 of tools cluster |
+| Above DATACENTER | 824 | 120 | cx+24 of datacenter cluster |
+| Above MONITORING | 1334 | 155 | cx+24 of monitoring cluster |
+
+## TraceMarker (Phase 2)
+
+- Purple rounded pill, centered at `(800, 840)` (bottom of scene)
+- Slides in from below (400ms ease-out) via `motion.g`
+- Text preset via DevPanel; shown/hidden via `<AnimatePresence>`
+
+## DevPanel (Phase 2, dev-only)
+
+- Rendered only when `import.meta.env.DEV` — not in production builds
+- Top-right collapsible toggle
+- Sections: Agent State | Connection State | Governance Gate | Trace Marker
+- `src/components/debug/DevPanel.tsx`
 
 ## Dynamic Nodes (Phase 4)
 
@@ -142,25 +189,44 @@ Scenarios S3 and S6 materialize nodes not in `agents.ts`:
 | Tooltip / caption | 12–14px |
 | Minimum | 12px |
 
+## Color Tokens (confirmed palette — do not change without owner approval)
+
+| Token | Value | Usage |
+|---|---|---|
+| `--bg-deep` | `#0a0a14` | SVG background |
+| `--bg-surface` | `#12122a` | Cluster floor fill |
+| `--bg-card` | `#1a1a2e` | Tooltip + card backgrounds |
+| `--kagent-purple` | `#6c3fc5` | Floor extrusion stroke, fills |
+| `--kagent-purple-glow` | `#8b5cf6` | Floor border, connections, dots |
+| `--kagent-purple-soft` | `#9f7aea` | Available for Phase 2+ accent use |
+| `--mcp-healthy` | `#00d4aa` | MCP hexagon stroke |
+
 ## Key Files
 
 ```
 src/
+  vite-env.d.ts              # /// <reference types="vite/client" /> — enables import.meta.env
   styles/tokens.css          # CSS variables — ONLY place to define colors
   styles/globals.css         # Tailwind + connection animation keyframes
-  data/agents.ts             # AGENTS[] + VISIBLE_AGENTS
+  data/agents.ts             # AGENTS[], VISIBLE_AGENTS, AgentState type
   data/mcps.ts               # MCPS[]
   data/connections.ts        # CONNECTIONS[] — 11 entries
   data/scenarios/types.ts    # ScenarioStep, Scenario interfaces
-  lib/geometry.ts            # bezierPath(), clusterFloorVertices(), hexagonPoints()
+  lib/geometry.ts            # bezierPath(), roundedParallelogramPath(), hexagonPoints()
   lib/colors.ts              # TS re-exports of token values
-  components/scene/
-    Scene.tsx                # SVG root + HoverProvider wrapper
-    ClusterFloor.tsx         # Parallelogram floor + cluster name label
-    AgentCard.tsx            # Logo-node + hover tooltip + HoverContext
-    MCPNode.tsx              # Hexagon + MCPLogo + external infra line
-    MCPLogo.tsx              # Official MCP SVG logo (white, inline)
-    Connection.tsx           # Single Bézier path, highlighted/base opacity
-    ConnectionLayer.tsx      # Builds all 11 connections, reads HoverContext
-    HoverContext.tsx         # hoveredAgentId context
+  components/
+    debug/
+      DevPanel.tsx           # Dev-only state trigger panel (import.meta.env.DEV)
+    scene/
+      Scene.tsx              # SVG root + state management + DevPanel + AnimatePresence gates
+      ClusterFloor.tsx       # Rounded parallelogram floor + K8s logo + cluster label
+      AgentCard.tsx          # motion.g node — 8 AgentState variants via Framer Motion
+      MCPNode.tsx            # Hexagon + MCPLogo + external infra labels
+      MCPLogo.tsx            # Official MCP SVG logo (white, inline)
+      KubernetesLogo.tsx     # Official K8s SVG logo (inline, placed on floor corners)
+      Connection.tsx         # Bézier path + perimeter dots + ConnectionState flow classes
+      ConnectionLayer.tsx    # Builds all 11 connections; accepts connectionStates prop
+      GovernanceGate.tsx     # Transient diamond gate — appear/evaluate/resolve/fade lifecycle
+      TraceMarker.tsx        # Purple pill — AnimatePresence slide-in from bottom
+      HoverContext.tsx       # hoveredAgentId context
 ```
