@@ -11,15 +11,13 @@ export interface Agent {
   displayInScene: boolean;
 }
 
-// ASSUMPTION: tools and monitoring clusters shifted ±60px outward from §9 spec values
-// per user request to increase visual separation from the central datacenter cluster.
 export const AGENTS: Agent[] = [
   {
     id: "cladra-agent",
     name: "cladra-agent",
-    description: "CLADRA orchestrator — coordinates diagnostic, capability, decision, and action agents",
-    cluster: "tools",
-    position: { x: 290, y: 390 },
+    description: "CLADRA orchestrator — coordinates diagnostic and action agents",
+    cluster: "datacenter",
+    position: { x: 860, y: 300 },
     displayInScene: true,
   },
   {
@@ -27,15 +25,7 @@ export const AGENTS: Agent[] = [
     name: "act-agent",
     description: "Executes VoLTE remediation actions",
     cluster: "datacenter",
-    position: { x: 700, y: 350 },
-    displayInScene: true,
-  },
-  {
-    id: "capability-agent",
-    name: "capability-agent",
-    description: "Evaluates available VoLTE remediation capabilities",
-    cluster: "datacenter",
-    position: { x: 900, y: 350 },
+    position: { x: 760, y: 420 },
     displayInScene: true,
   },
   {
@@ -43,15 +33,7 @@ export const AGENTS: Agent[] = [
     name: "core-diagnostic-agent",
     description: "Diagnoses issues in the core network infrastructure using VoLTE data",
     cluster: "datacenter",
-    position: { x: 700, y: 460 },
-    displayInScene: true,
-  },
-  {
-    id: "decision-agent",
-    name: "decision-agent",
-    description: "Makes remediation decisions based on diagnostics and capabilities",
-    cluster: "datacenter",
-    position: { x: 900, y: 460 },
+    position: { x: 760, y: 540 },
     displayInScene: true,
   },
   {
@@ -59,23 +41,15 @@ export const AGENTS: Agent[] = [
     name: "ran-diagnostic-agent",
     description: "Diagnoses issues in the Radio Access Network using VoLTE diagnostic tools",
     cluster: "datacenter",
-    position: { x: 700, y: 570 },
+    position: { x: 990, y: 540 },
     displayInScene: true,
   },
   {
     id: "reporting-agent",
     name: "reporting-agent",
-    description: "Creates a ServiceNow incident that captures the pipeline outcome",
+    description: "Creates audit reports that capture the pipeline outcome",
     cluster: "datacenter",
-    position: { x: 900, y: 570 },
-    displayInScene: true,
-  },
-  {
-    id: "prediction-agent",
-    name: "prediction-agent",
-    description: "Predicts network issues and triggers CLADRA proactively",
-    cluster: "monitoring",
-    position: { x: 1310, y: 390 },
+    position: { x: 990, y: 420 },
     displayInScene: true,
   },
   {
@@ -83,7 +57,7 @@ export const AGENTS: Agent[] = [
     name: "slo-agent",
     description: "Monitors Service Level Objectives and triggers CLADRA for violations",
     cluster: "monitoring",
-    position: { x: 1310, y: 540 },
+    position: { x: 1350, y: 440 },
     displayInScene: true,
   },
 

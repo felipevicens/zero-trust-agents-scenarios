@@ -13,8 +13,19 @@ const TOOLTIP_W = 260;
 const TOOLTIP_H = 90;
 
 const MCP_DESCRIPTIONS: Record<string, string> = {
-  "policy-mcp": "Policy MCP — provides OIDC tokens, scope decisions, and playbook access via Policy Registry, PCRF, IMS Gateway, and ServiceNow.",
+  "policy-mcp": "Policy MCP — provides OIDC tokens, scope decisions, and playbook access via Policy Registry, PCRF, and IMS Gateway.",
+  "itsm-mcp": "ITSM MCP — provides access to ServiceNow incidents, CMDB configuration records, and Jira ITSM workflows for CLADRA orchestration.",
+  "core-mcp": "Core MCP — exposes IMS Gateway, HSS subscriber data, and Core xDR records for core network diagnostics.",
+  "ran-mcp": "RAN MCP — aggregates RAN KPIs, eNodeB performance metrics, and CEM event data for radio access diagnostics.",
   "monitoring-mcp": "Monitoring MCP — aggregates SLO telemetry, xDR records, and alerting signals from Prometheus, Grafana, and xDR.",
+};
+
+const MCP_LABELS: Record<string, string> = {
+  "policy-mcp": "Policy / PCRF",
+  "itsm-mcp": "ITSM / CMDB",
+  "core-mcp": "Core / IMS",
+  "ran-mcp": "RAN / CEM",
+  "monitoring-mcp": "Prometheus / xDR",
 };
 
 function MCPTooltip({ cx, cy, text }: { cx: number; cy: number; text: string }) {
@@ -55,13 +66,13 @@ function MCPTooltip({ cx, cy, text }: { cx: number; cy: number; text: string }) 
 
 export function MCPNode({ mcp }: MCPNodeProps) {
   const [hovered, setHovered] = useState(false);
-  const { position, id, externalTargets } = mcp;
+  const { position, id, externalTargets, lineLength = 160 } = mcp;
   const { x: cx, y: cy } = position;
   const pts = hexagonPoints(cx, cy, HEX_RADIUS);
 
   const isRight = cx > 800;
-  const lineEndX = isRight ? cx + 160 : cx - 160;
-  const label = id === "policy-mcp" ? "Policy / PCRF / ITSM" : "Prometheus / Grafana / xDR";
+  const lineEndX = isRight ? cx + lineLength : cx - lineLength;
+  const label = MCP_LABELS[id] ?? id;
 
   return (
     <g

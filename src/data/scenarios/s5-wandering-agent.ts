@@ -17,6 +17,7 @@ export const s5: Scenario = {
       id: "s5-1",
       kind: "agent-action",
       actor: "ran-diagnostic-agent",
+      target: "ran-mcp",
       caption: "RAN Diagnostic queries RAN MCP — reads radio access metrics",
     },
     {
@@ -72,18 +73,18 @@ export const s5: Scenario = {
       caption: "BLOCKED at mesh — PCRF not in scope of RAN-domain token",
     },
 
-    // ── Legitimate conclusion (cladra uses correct token via capability-agent) ─
+    // ── Legitimate conclusion (cladra uses correct token via Policy MCP) ────────
     {
       id: "s5-9",
       kind: "agent-action",
       actor: "cladra-agent",
-      target: "capability-agent",
-      caption: "Orchestrator tasks Capability Agent — queries Policy MCP for PCRF scope",
+      target: "policy-mcp",
+      caption: "Orchestrator queries Policy MCP for PCRF scope — correct delegation",
     },
     {
       id: "s5-10",
       kind: "gate",
-      actor: "capability-agent",
+      actor: "policy-mcp",
       gateLabel: "Read-only Policy scope?",
       gateResult: "pass",
       caption: "Scope check — read-only policy access permitted under authorised token",
@@ -92,7 +93,7 @@ export const s5: Scenario = {
     {
       id: "s5-11",
       kind: "permitted",
-      actor: "capability-agent",
+      actor: "policy-mcp",
       caption: "PCRF read succeeds under authorised token — correct delegation wins",
     },
     {

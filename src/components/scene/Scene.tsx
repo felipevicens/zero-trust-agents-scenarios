@@ -18,9 +18,9 @@ import type { AgentState } from "../../data/agents";
 import type { ConnectionState } from "../../store/playback";
 
 const CLUSTERS = [
-  { name: "tools",      cx: 290,  cy: 450, width: 400, height: 312 },
-  { name: "datacenter", cx: 800,  cy: 450, width: 480, height: 396 },
-  { name: "monitoring", cx: 1310, cy: 450, width: 400, height: 312 },
+  { name: "tools",      cx: 380,  cy: 450, width: 380, height: 460 },
+  { name: "datacenter", cx: 860,  cy: 450, width: 460, height: 460 },
+  { name: "monitoring", cx: 1350, cy: 450, width: 380, height: 460 },
 ] as const;
 
 // Scene logical center

@@ -13,7 +13,6 @@ const GATE_KINDS = [
   "Scoped to RAN domain?",
   "Scoped to Core domain?",
   "Read-only Policy scope?",
-  "Within approved playbook?",
   "Single-use write token?",
   "Goal matches declared scope?",
   "mTLS cert from trusted CA?",
@@ -22,14 +21,12 @@ const GATE_KINDS = [
 ];
 
 // Gate positions: diamond S=30, label is 2 lines × 16px below the tip.
-// Cluster name baselines: tools/monitoring y=266, datacenter y=224.
-// Gate label bottom = y + 30 + 16 + 16 = y + 62. Keep ≥40px gap above cluster name.
-// tools/monitoring: y + 62 ≤ 226  →  y ≤ 164  → use 155
-// datacenter:       y + 62 ≤ 184  →  y ≤ 122  → use 120
+// All clusters equal: cy=450, H=460 → top=220, label y=192.
+// Gate label bottom = y + 62 ≤ 192 - 40 = 152 → y ≤ 90 → use 85 (same for all three).
 const GATE_PRESETS = [
-  { label: "Above TOOLS",       x: 314,  y: 155 },
-  { label: "Above DATACENTER",  x: 824,  y: 120 },
-  { label: "Above MONITORING",  x: 1334, y: 155 },
+  { label: "Above TOOLS",       x: 404,  y: 85 },
+  { label: "Above DATACENTER",  x: 884,  y: 85 },
+  { label: "Above MONITORING",  x: 1374, y: 85 },
 ];
 
 const TRACE_TEXTS = [

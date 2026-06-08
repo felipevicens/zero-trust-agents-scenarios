@@ -48,9 +48,9 @@ pnpm typecheck        # tsc --noEmit (strict mode, no any, no @ts-ignore)
 The app is a single-page static site. State will live in one Zustand store (`src/store/playback.ts`) once Phase 3 lands.
 
 **Data layer** (`src/data/`) is pure config — no logic:
-- `agents.ts` — 9 visible agents + 2 hidden test agents (`displayInScene: false`)
-- `mcps.ts` — 2 MCP nodes
-- `connections.ts` — 11 permanent connections, all dashed (`stroke-dasharray: 6 4`)
+- `agents.ts` — 6 visible agents + 2 hidden test agents (`displayInScene: false`)
+- `mcps.ts` — 5 MCP nodes (policy, monitoring, itsm, core, ran); interface includes optional `lineLength`
+- `connections.ts` — 10 permanent connections, all dashed (`stroke-dasharray: 6 4`)
 - `scenarios/` — 6 scenario files (`s1`–`s6`), each exporting a `Scenario` with typed `ScenarioStep[]`
 
 **Scene** (`src/components/scene/`) renders an SVG with `viewBox="0 0 1600 900"`:
@@ -68,24 +68,28 @@ The app is a single-page static site. State will live in one Zustand store (`src
 ### Cluster floors
 | Cluster | cx | cy | width | height |
 |---|---|---|---|---|
-| `tools` | 290 | 450 | 400 | 312 |
-| `datacenter` | 800 | 450 | 480 | 396 |
+| `tools` | 290 | 450 | 280 | 200 |
+| `datacenter` | 800 | 455 | 580 | 440 |
 | `monitoring` | 1310 | 450 | 400 | 312 |
 
 ### Agent positions (center of logo)
 | Agent | x | y | Cluster |
 |---|---|---|---|
-| `cladra-agent` | 290 | 390 | tools |
-| `policy-mcp` | 190 | 520 | tools |
-| `act-agent` | 700 | 350 | datacenter |
-| `capability-agent` | 900 | 350 | datacenter |
-| `core-diagnostic-agent` | 700 | 460 | datacenter |
-| `decision-agent` | 900 | 460 | datacenter |
-| `ran-diagnostic-agent` | 700 | 570 | datacenter |
-| `reporting-agent` | 900 | 570 | datacenter |
-| `prediction-agent` | 1310 | 390 | monitoring |
+| `cladra-agent` | 800 | 310 | datacenter |
+| `act-agent` | 660 | 430 | datacenter |
+| `core-diagnostic-agent` | 680 | 545 | datacenter |
+| `ran-diagnostic-agent` | 800 | 545 | datacenter |
+| `reporting-agent` | 940 | 430 | datacenter |
 | `slo-agent` | 1310 | 540 | monitoring |
-| `monitoring-mcp` | 1420 | 520 | monitoring |
+
+### MCP positions
+| MCP | x | y | Cluster | lineLength |
+|---|---|---|---|---|
+| `policy-mcp` | 190 | 520 | tools | 160 (default) |
+| `itsm-mcp` | 970 | 305 | datacenter | 90 |
+| `core-mcp` | 570 | 545 | datacenter | 80 |
+| `ran-mcp` | 960 | 545 | datacenter | 80 |
+| `monitoring-mcp` | 1420 | 520 | monitoring | 160 (default) |
 
 ### Floor geometry
 - Shape: SVG `<path>` via `roundedParallelogramPath()` in `lib/geometry.ts` — **not** `<polygon>`

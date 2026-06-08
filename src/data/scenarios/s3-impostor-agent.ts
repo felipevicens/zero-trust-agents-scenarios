@@ -1,6 +1,6 @@
 import type { Scenario } from "./types";
 
-// rogue-process materializes inside TOOLS floor (bottom-right corner)
+// rogue-process materializes at the right edge of the TOOLS floor, clear of MCPs
 // Gate diamonds appear between TOOLS and DATACENTER clusters
 const ROGUE_GATE_POS = { x: 650, y: 155 };
 
@@ -17,8 +17,8 @@ export const s3: Scenario = {
       actor: "rogue-process",
       dynamicNode: {
         id: "rogue-process",
-        x: 390,
-        y: 540,
+        x: 470,
+        y: 515,
         type: "rogue-process",
         label: "remediation-agent-v2",
       },

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { AgentState } from "../data/agents";
 import { AGENTS } from "../data/agents";
+import { MCPS } from "../data/mcps";
 import { CONNECTIONS } from "../data/connections";
 import { SCENARIOS_MAP } from "../data/scenarios";
 import type { DynamicNodeSpec, Scenario, ScenarioStep } from "../data/scenarios/types";
@@ -22,9 +23,9 @@ export interface GateInstance {
 }
 
 const GATE_POSITIONS = {
-  tools:      { x: 314,  y: 155 },
-  datacenter: { x: 824,  y: 120 },
-  monitoring: { x: 1334, y: 155 },
+  tools:      { x: 404,  y: 85 },
+  datacenter: { x: 884,  y: 85 },
+  monitoring: { x: 1374, y: 85 },
 } as const;
 
 function getGatePosition(
@@ -35,6 +36,8 @@ function getGatePosition(
   if (override) return override;
   const agent = AGENTS.find((a) => a.id === actorId);
   if (agent) return GATE_POSITIONS[agent.cluster];
+  const mcp = MCPS.find((m) => m.id === actorId);
+  if (mcp) return GATE_POSITIONS[mcp.cluster];
   if (dynamicNodes?.[actorId]) {
     const n = dynamicNodes[actorId];
     return { x: n.x, y: n.y - 80 };

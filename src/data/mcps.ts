@@ -5,21 +5,46 @@ export interface MCPNode {
   cluster: Cluster;
   position: { x: number; y: number };
   externalTargets: string[];
+  /** Override the default 160px external-target line length */
+  lineLength?: number;
 }
 
-// ASSUMPTION: tools and monitoring MCPs shifted ±60px outward from §9 spec values
-// to match the cluster position adjustment (see agents.ts).
 export const MCPS: MCPNode[] = [
+  // Tools cluster — policy/integration MCPs, labels go left with long lines
   {
     id: "policy-mcp",
     cluster: "tools",
-    position: { x: 190, y: 520 },
-    externalTargets: ["Policy Registry", "PCRF", "IMS Gateway", "ServiceNow"],
+    position: { x: 310, y: 300 },
+    externalTargets: ["Policy Registry", "PCRF", "IMS Gateway"],
+    lineLength: 190,
   },
+  {
+    id: "itsm-mcp",
+    cluster: "tools",
+    position: { x: 310, y: 400 },
+    externalTargets: ["ServiceNow", "CMDB", "Jira ITSM", "Ticketing Sys"],
+    lineLength: 190,
+  },
+  {
+    id: "core-mcp",
+    cluster: "tools",
+    position: { x: 310, y: 500 },
+    externalTargets: ["IMS Gateway", "HSS", "Core xDR", "EPC Core"],
+    lineLength: 190,
+  },
+  {
+    id: "ran-mcp",
+    cluster: "tools",
+    position: { x: 310, y: 600 },
+    externalTargets: ["RAN KPIs", "eNodeB Metrics", "xDR Records", "CEM Data"],
+    lineLength: 190,
+  },
+  // Monitoring cluster
   {
     id: "monitoring-mcp",
     cluster: "monitoring",
-    position: { x: 1420, y: 520 },
+    position: { x: 1450, y: 530 },
     externalTargets: ["Prometheus", "Grafana", "xDR Records", "SLO Telemetry"],
+    lineLength: 140,
   },
 ];

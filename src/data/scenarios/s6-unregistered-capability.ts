@@ -31,8 +31,8 @@ export const s6: Scenario = {
       actor: "shadow-mcp",
       dynamicNode: {
         id: "shadow-mcp",
-        x: 1015,
-        y: 430,
+        x: 1040,
+        y: 355,
         type: "shadow-mcp",
         label: "shadow-mcp",
       },

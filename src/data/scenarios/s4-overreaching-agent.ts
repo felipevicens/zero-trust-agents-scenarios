@@ -11,6 +11,7 @@ export const s4: Scenario = {
       id: "s4-1",
       kind: "agent-action",
       actor: "core-diagnostic-agent",
+      target: "core-mcp",
       caption: "Core Diagnostic queries Core MCP — reads IMS xDR records",
     },
     {
