@@ -7,6 +7,7 @@ export function useScenarioPlayer() {
   const currentStepIndex = usePlaybackStore((s) => s.currentStepIndex);
   const scenarioId = usePlaybackStore((s) => s.scenarioId);
   const speed = usePlaybackStore((s) => s.speed);
+  const hitlStatus = usePlaybackStore((s) => s.hitlStatus);
   const next = usePlaybackStore((s) => s.next);
   const pause = usePlaybackStore((s) => s.pause);
 
@@ -28,10 +29,14 @@ export function useScenarioPlayer() {
     }
 
     const step = scenario.steps[currentStepIndex];
+
+    // Never auto-advance past a HITL step — only the Approve/Deny buttons can unblock it
+    if (step.kind === "hitl" && hitlStatus !== "approved") return;
+
     const defaultMs = step.kind === "gate" ? 3200 : 1500;
     const durationMs = (step.durationMs ?? defaultMs) / speed;
 
     const timer = setTimeout(next, durationMs);
     return () => clearTimeout(timer);
-  }, [isPlaying, currentStepIndex, scenarioId, speed, next, pause]);
+  }, [isPlaying, currentStepIndex, scenarioId, speed, hitlStatus, next, pause]);
 }

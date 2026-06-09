@@ -128,6 +128,13 @@ export const s1: Scenario = {
       caption: "Orchestrator tasks Act Agent — PCRF policy refresh",
     },
     {
+      id: "s1-hitl",
+      kind: "hitl",
+      actor: "act-agent",
+      caption: "Human Authorization Gate — operator approval required before PCRF remediation",
+      hitlAction: "PCRF policy refresh on core network",
+    },
+    {
       id: "s1-17",
       kind: "gate",
       actor: "act-agent",

@@ -129,9 +129,15 @@ function applyStep(step: ScenarioStep, vs: VisualState): VisualState {
     case "adversarial":
       if (step.actor) {
         agentStates[step.actor] = "adversarial";
-        // Start a new orange attempt line when a target is specified
         if (step.target) {
-          adversarialLine = { from: step.actor, to: step.target, color: "orange" };
+          const existingConnId = findConnectionId(step.actor, step.target);
+          if (existingConnId) {
+            // Real permanent connection — turn the wire orange directly
+            connectionStates[existingConnId] = "adversarial";
+          } else {
+            // No permanent connection — draw a floating orange overlay line
+            adversarialLine = { from: step.actor, to: step.target, color: "orange" };
+          }
         }
       }
       break;
@@ -145,6 +151,14 @@ function applyStep(step: ScenarioStep, vs: VisualState): VisualState {
         if (agentStates[id] === "active" || agentStates[id] === "gate") {
           agentStates[id] = "passed";
         }
+      }
+      break;
+
+    case "hitl":
+      // No GovernanceGate diamond — visual gate is the header approval widget.
+      // Set actor to "gate" state (amber shimmer) to signal waiting for authorization.
+      if (step.actor) {
+        agentStates[step.actor] = "gate";
       }
       break;
   }
@@ -171,6 +185,8 @@ function buildVisualFromSteps(scenario: Scenario, upToIndex: number): VisualStat
   return vs;
 }
 
+export type ApprovalStatus = "pending" | "approved" | "denied";
+
 export interface PlaybackStore {
   scenarioId: Scenario["id"] | null;
   currentStepIndex: number;  // -1 = scenario selected, not yet started
@@ -186,6 +202,8 @@ export interface PlaybackStore {
   dynamicNodes: Record<string, DynamicNodeSpec>;
   adversarialLine: AdversarialLine | null;
   caption: string;
+  /** Non-null only while the current step is a hitl step */
+  hitlStatus: ApprovalStatus | null;
 
   selectScenario: (id: Scenario["id"]) => void;
   play: () => void;
@@ -197,6 +215,8 @@ export interface PlaybackStore {
   gateCompleted: (id: number) => void;
   toggleAutoplay: () => void;
   togglePresenterMode: () => void;
+  approveHITL: () => void;
+  denyHITL: () => void;
 }
 
 const _defaultScenario = SCENARIOS_MAP["S1"];
@@ -216,6 +236,7 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
   dynamicNodes: {},
   adversarialLine: null,
   caption: _defaultScenario?.subtitle ?? "Press → to begin.",
+  hitlStatus: null,
 
   selectScenario: (id) => {
     const scenario = SCENARIOS_MAP[id];
@@ -232,6 +253,7 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
       dynamicNodes: {},
       adversarialLine: null,
       caption: scenario?.subtitle ?? "Press → to begin.",
+      hitlStatus: null,
     });
   },
 
@@ -248,7 +270,11 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
 
   next: () => {
     const state = get();
-    const { scenarioId, currentStepIndex } = state;
+    const { scenarioId, currentStepIndex, hitlStatus } = state;
+
+    // Block forward navigation while awaiting or after denying HITL approval
+    if (hitlStatus === "pending" || hitlStatus === "denied") return;
+
     if (!scenarioId) return;
     const scenario = SCENARIOS_MAP[scenarioId];
     if (!scenario) return;
@@ -270,6 +296,8 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
       adversarialLine: state.adversarialLine,
     });
 
+    const isHITL = step.kind === "hitl";
+
     set({
       currentStepIndex: nextIndex,
       caption: step.caption,
@@ -280,6 +308,8 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
       traceText: newVS.traceText,
       dynamicNodes: newVS.dynamicNodes,
       adversarialLine: newVS.adversarialLine,
+      hitlStatus: isHITL ? "pending" : null,
+      ...(isHITL ? { isPlaying: false } : {}),
     });
   },
 
@@ -299,16 +329,18 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
         adversarialLine: null,
         caption: scenario.subtitle,
         isPlaying: false,
+        hitlStatus: null,
       });
       return;
     }
 
     const targetIndex = currentStepIndex - 1;
     const newVS = buildVisualFromSteps(scenario, targetIndex);
+    const targetStep = scenario.steps[targetIndex];
 
     set({
       currentStepIndex: targetIndex,
-      caption: scenario.steps[targetIndex].caption,
+      caption: targetStep.caption,
       agentStates: newVS.agentStates,
       connectionStates: newVS.connectionStates,
       gates: [],
@@ -317,6 +349,7 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
       dynamicNodes: newVS.dynamicNodes,
       adversarialLine: newVS.adversarialLine,
       isPlaying: false,
+      hitlStatus: targetStep.kind === "hitl" ? "pending" : null,
     });
   },
 
@@ -334,6 +367,7 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
       adversarialLine: null,
       caption: scenario?.subtitle ?? _defaultScenario?.subtitle ?? "Press → to begin.",
       isPlaying: false,
+      hitlStatus: null,
     });
   },
 
@@ -341,6 +375,29 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
 
   toggleAutoplay: () => set((s) => ({ autoplay: !s.autoplay })),
   togglePresenterMode: () => set((s) => ({ presenterMode: !s.presenterMode })),
+
+  approveHITL: () => {
+    const { scenarioId, currentStepIndex } = get();
+    const scenario = scenarioId ? SCENARIOS_MAP[scenarioId] : null;
+    const step = scenario?.steps[currentStepIndex];
+    const actorId = step?.actor;
+    set((s) => ({
+      hitlStatus: "approved",
+      ...(actorId ? { agentStates: { ...s.agentStates, [actorId]: "active" } } : {}),
+    }));
+  },
+
+  denyHITL: () => {
+    const { scenarioId, currentStepIndex } = get();
+    const scenario = scenarioId ? SCENARIOS_MAP[scenarioId] : null;
+    const step = scenario?.steps[currentStepIndex];
+    const actorId = step?.actor;
+    set((s) => ({
+      hitlStatus: "denied",
+      isPlaying: false,
+      ...(actorId ? { agentStates: { ...s.agentStates, [actorId]: "blocked" } } : {}),
+    }));
+  },
 
   gateCompleted: (id) => {
     const gate = get().gates.find((g) => g.id === id);

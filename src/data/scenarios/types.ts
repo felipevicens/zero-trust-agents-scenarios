@@ -4,7 +4,8 @@ export type StepKind =
   | "permitted"
   | "blocked"
   | "adversarial"
-  | "trace";
+  | "trace"
+  | "hitl";
 
 export interface DynamicNodeSpec {
   id: string;
@@ -29,6 +30,8 @@ export interface ScenarioStep {
   gatePositionOverride?: { x: number; y: number };
   /** On trace steps: explicitly clear the adversarial attempt line (default: keep it) */
   clearAdversarialLine?: true;
+  /** On hitl steps: the specific action requiring approval, shown in button hover tooltip */
+  hitlAction?: string;
 }
 
 export interface Scenario {

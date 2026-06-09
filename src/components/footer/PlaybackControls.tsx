@@ -6,6 +6,7 @@ export function PlaybackControls() {
   const speed = usePlaybackStore((s) => s.speed);
   const scenarioId = usePlaybackStore((s) => s.scenarioId);
   const currentStepIndex = usePlaybackStore((s) => s.currentStepIndex);
+  const hitlStatus = usePlaybackStore((s) => s.hitlStatus);
   const play = usePlaybackStore((s) => s.play);
   const pause = usePlaybackStore((s) => s.pause);
   const next = usePlaybackStore((s) => s.next);
@@ -17,8 +18,9 @@ export function PlaybackControls() {
   const stepCount = scenario?.steps.length ?? 0;
   const atEnd = stepCount > 0 && currentStepIndex >= stepCount - 1;
   const hasScenario = scenarioId !== null && scenario !== undefined;
+  const hitlBlocking = hitlStatus === "pending" || hitlStatus === "denied";
   const canPrev = hasScenario && currentStepIndex >= 0;
-  const canNext = hasScenario && !atEnd;
+  const canNext = hasScenario && !atEnd && !hitlBlocking;
 
   const outlinedBtn: React.CSSProperties = {
     background: "transparent",

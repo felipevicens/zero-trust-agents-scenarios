@@ -39,7 +39,8 @@ export const s2: Scenario = {
       id: "s2-5",
       kind: "adversarial",
       actor: "core-diagnostic-agent",
-      caption: "Malicious payload embedded in xDR — goal state shifts",
+      target: "core-mcp",
+      caption: "Rogue agent deployed",
       durationMs: 2000,
     },
     {
@@ -50,6 +51,13 @@ export const s2: Scenario = {
       gateResult: "fail",
       caption: "Goal check — declared scope: diagnose; actual goal: exfiltrate",
       durationMs: 3200,
+    },
+    {
+      id: "s2-platform-notif",
+      kind: "agent-action",
+      actor: "itsm-mcp",
+      target: "cladra-agent",
+      caption: "Platform Team Notified",
     },
     {
       id: "s2-7",

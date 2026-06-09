@@ -1,3 +1,5 @@
+import { HumanAuthGate } from "./HumanAuthGate";
+
 export function Header() {
   return (
     <header
@@ -51,6 +53,8 @@ export function Header() {
           TM Forum Moonshot Catalyst C26.0.933
         </p>
       </div>
+
+      <HumanAuthGate />
     </header>
   );
 }
