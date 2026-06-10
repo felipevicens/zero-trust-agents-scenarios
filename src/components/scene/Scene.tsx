@@ -11,8 +11,10 @@ import { GovernanceGate } from "./GovernanceGate";
 import { TraceMarker } from "./TraceMarker";
 import { DynamicNode } from "./DynamicNode";
 import { Legend } from "./Legend";
+import { SlideOverlay } from "./SlideOverlay";
 import { DevPanel } from "../debug/DevPanel";
-import { usePlaybackStore } from "../../store/playback";
+import { usePlaybackStore, getEffectiveSteps } from "../../store/playback";
+import { SCENARIOS_MAP } from "../../data/scenarios";
 import { bezierPath } from "../../lib/geometry";
 import type { AgentState } from "../../data/agents";
 import type { ConnectionState } from "../../store/playback";
@@ -144,6 +146,18 @@ export function Scene() {
   const adversarialLineSpec = usePlaybackStore((s) => s.adversarialLine);
   const gateCompleted = usePlaybackStore((s) => s.gateCompleted);
   const speed = usePlaybackStore((s) => s.speed);
+  const currentStepIndex = usePlaybackStore((s) => s.currentStepIndex);
+  const scenarioId = usePlaybackStore((s) => s.scenarioId);
+  const helpMode = usePlaybackStore((s) => s.helpMode);
+
+  const currentSlideImage = useMemo(() => {
+    if (!scenarioId) return null;
+    const scenario = SCENARIOS_MAP[scenarioId];
+    if (!scenario) return null;
+    const steps = getEffectiveSteps(scenario, helpMode);
+    const step = steps[currentStepIndex];
+    return step?.kind === "slide" ? (step.slideImage ?? null) : null;
+  }, [scenarioId, currentStepIndex, helpMode]);
 
   // Compute the SVG path for the adversarial attempt line from node IDs → positions
   const adversarialLinePath = useMemo(() => {
@@ -281,6 +295,12 @@ export function Scene() {
           </AnimatePresence>
         </svg>
       </HoverProvider>
+
+      <AnimatePresence>
+        {currentSlideImage && (
+          <SlideOverlay key={currentSlideImage} image={currentSlideImage} />
+        )}
+      </AnimatePresence>
 
       <ZoomControls
         zoom={zoom}

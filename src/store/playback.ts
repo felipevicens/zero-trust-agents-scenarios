@@ -4,7 +4,15 @@ import { AGENTS } from "../data/agents";
 import { MCPS } from "../data/mcps";
 import { CONNECTIONS } from "../data/connections";
 import { SCENARIOS_MAP } from "../data/scenarios";
+import { HELP_SLIDES } from "../data/scenarios/s1-governed-autonomy";
 import type { DynamicNodeSpec, Scenario, ScenarioStep } from "../data/scenarios/types";
+
+export function getEffectiveSteps(scenario: Scenario, helpMode: boolean): ScenarioStep[] {
+  if (scenario.id === "S1" && helpMode) {
+    return [...HELP_SLIDES, ...scenario.steps];
+  }
+  return scenario.steps;
+}
 
 export type ConnectionState = "inactive" | "flowing-permitted" | "flowing-blocked" | "adversarial";
 
@@ -167,7 +175,7 @@ function applyStep(step: ScenarioStep, vs: VisualState): VisualState {
 }
 
 // Replay steps 0..upToIndex to reconstruct visual state for prev()
-function buildVisualFromSteps(scenario: Scenario, upToIndex: number): VisualState {
+function buildVisualFromSteps(scenario: Scenario, upToIndex: number, helpMode: boolean): VisualState {
   let vs: VisualState = {
     agentStates: {},
     connectionStates: {},
@@ -177,8 +185,9 @@ function buildVisualFromSteps(scenario: Scenario, upToIndex: number): VisualStat
     dynamicNodes: {},
     adversarialLine: null,
   };
+  const steps = getEffectiveSteps(scenario, helpMode);
   for (let i = 0; i <= upToIndex; i++) {
-    vs = applyStep(scenario.steps[i], vs);
+    vs = applyStep(steps[i], vs);
   }
   // Don't replay gate animations when rebuilding history
   vs.gates = [];
@@ -204,6 +213,7 @@ export interface PlaybackStore {
   caption: string;
   /** Non-null only while the current step is a hitl step */
   hitlStatus: ApprovalStatus | null;
+  helpMode: boolean;
 
   selectScenario: (id: Scenario["id"]) => void;
   play: () => void;
@@ -215,6 +225,7 @@ export interface PlaybackStore {
   gateCompleted: (id: number) => void;
   toggleAutoplay: () => void;
   togglePresenterMode: () => void;
+  toggleHelpMode: () => void;
   approveHITL: () => void;
   denyHITL: () => void;
 }
@@ -237,6 +248,7 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
   adversarialLine: null,
   caption: _defaultScenario?.subtitle ?? "Press → to begin.",
   hitlStatus: null,
+  helpMode: localStorage.getItem("zta-help-mode") === "true",
 
   selectScenario: (id) => {
     const scenario = SCENARIOS_MAP[id];
@@ -258,11 +270,11 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
   },
 
   play: () => {
-    const { scenarioId, currentStepIndex } = get();
+    const { scenarioId, currentStepIndex, helpMode } = get();
     if (!scenarioId) return;
     const scenario = SCENARIOS_MAP[scenarioId];
     if (!scenario) return;
-    if (currentStepIndex >= scenario.steps.length - 1) return;
+    if (currentStepIndex >= getEffectiveSteps(scenario, helpMode).length - 1) return;
     set({ isPlaying: true });
   },
 
@@ -270,7 +282,7 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
 
   next: () => {
     const state = get();
-    const { scenarioId, currentStepIndex, hitlStatus } = state;
+    const { scenarioId, currentStepIndex, hitlStatus, helpMode } = state;
 
     // Block forward navigation while awaiting or after denying HITL approval
     if (hitlStatus === "pending" || hitlStatus === "denied") return;
@@ -279,13 +291,14 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
     const scenario = SCENARIOS_MAP[scenarioId];
     if (!scenario) return;
 
+    const steps = getEffectiveSteps(scenario, helpMode);
     const nextIndex = currentStepIndex + 1;
-    if (nextIndex >= scenario.steps.length) {
+    if (nextIndex >= steps.length) {
       set({ isPlaying: false });
       return;
     }
 
-    const step = scenario.steps[nextIndex];
+    const step = steps[nextIndex];
     const newVS = applyStep(step, {
       agentStates: { ...state.agentStates },
       connectionStates: { ...state.connectionStates },
@@ -314,7 +327,7 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
   },
 
   prev: () => {
-    const { scenarioId, currentStepIndex } = get();
+    const { scenarioId, currentStepIndex, helpMode } = get();
     if (!scenarioId) return;
     const scenario = SCENARIOS_MAP[scenarioId];
     if (!scenario) return;
@@ -335,8 +348,9 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
     }
 
     const targetIndex = currentStepIndex - 1;
-    const newVS = buildVisualFromSteps(scenario, targetIndex);
-    const targetStep = scenario.steps[targetIndex];
+    const newVS = buildVisualFromSteps(scenario, targetIndex, helpMode);
+    const steps = getEffectiveSteps(scenario, helpMode);
+    const targetStep = steps[targetIndex];
 
     set({
       currentStepIndex: targetIndex,
@@ -375,6 +389,30 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
 
   toggleAutoplay: () => set((s) => ({ autoplay: !s.autoplay })),
   togglePresenterMode: () => set((s) => ({ presenterMode: !s.presenterMode })),
+
+  toggleHelpMode: () => {
+    const { scenarioId } = get();
+    const scenario = scenarioId ? SCENARIOS_MAP[scenarioId] : null;
+    set((s) => {
+      const next = !s.helpMode;
+      localStorage.setItem("zta-help-mode", String(next));
+      return {
+        helpMode: next,
+        // Reset to beginning — step indices shift when slides are injected/removed
+        currentStepIndex: -1,
+        agentStates: {},
+        connectionStates: {},
+        gates: [],
+        gateIdCounter: 0,
+        traceText: null,
+        dynamicNodes: {},
+        adversarialLine: null,
+        caption: scenario?.subtitle ?? _defaultScenario?.subtitle ?? "Press → to begin.",
+        isPlaying: false,
+        hitlStatus: null,
+      };
+    });
+  },
 
   approveHITL: () => {
     const { scenarioId, currentStepIndex } = get();

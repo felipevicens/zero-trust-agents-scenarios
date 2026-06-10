@@ -1,5 +1,6 @@
 import { usePlaybackStore } from "../../store/playback";
 import { SCENARIOS_MAP } from "../../data/scenarios";
+import type React from "react";
 
 export function PlaybackControls() {
   const isPlaying = usePlaybackStore((s) => s.isPlaying);
@@ -7,6 +8,8 @@ export function PlaybackControls() {
   const scenarioId = usePlaybackStore((s) => s.scenarioId);
   const currentStepIndex = usePlaybackStore((s) => s.currentStepIndex);
   const hitlStatus = usePlaybackStore((s) => s.hitlStatus);
+  const helpMode = usePlaybackStore((s) => s.helpMode);
+  const toggleHelpMode = usePlaybackStore((s) => s.toggleHelpMode);
   const play = usePlaybackStore((s) => s.play);
   const pause = usePlaybackStore((s) => s.pause);
   const next = usePlaybackStore((s) => s.next);
@@ -71,6 +74,37 @@ export function PlaybackControls() {
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+      {/* Help Mode toggle — S1 only */}
+      {scenarioId === "S1" && (
+        <>
+          <button
+            onClick={toggleHelpMode}
+            title={helpMode ? "Help Mode ON — click to disable" : "Help Mode OFF — click to enable"}
+            style={{
+              background: helpMode ? "rgba(0,212,170,0.15)" : "transparent",
+              border: `1px solid ${helpMode ? "var(--mcp-healthy)" : "var(--border-subtle)"}`,
+              borderRadius: "8px",
+              color: helpMode ? "var(--mcp-healthy)" : "var(--text-muted)",
+              fontFamily: "Inter, sans-serif",
+              fontSize: "13px",
+              fontWeight: helpMode ? 600 : 400,
+              padding: "5px 10px",
+              cursor: "pointer",
+              transition: "all 0.15s",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              flexShrink: 0,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span style={{ fontSize: "14px" }}>?</span>
+            Help
+          </button>
+          <div style={{ width: "1px", height: "32px", background: "var(--border-subtle)", flexShrink: 0 }} />
+        </>
+      )}
+
       {/* Speed */}
       <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
         {([0.5, 1, 2] as const).map((s) => (

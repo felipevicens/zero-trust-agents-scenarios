@@ -5,7 +5,8 @@ export type StepKind =
   | "blocked"
   | "adversarial"
   | "trace"
-  | "hitl";
+  | "hitl"
+  | "slide";
 
 export interface DynamicNodeSpec {
   id: string;
@@ -32,6 +33,8 @@ export interface ScenarioStep {
   clearAdversarialLine?: true;
   /** On hitl steps: the specific action requiring approval, shown in button hover tooltip */
   hitlAction?: string;
+  /** On slide steps: path to the full-screen image (relative to /public) */
+  slideImage?: string;
 }
 
 export interface Scenario {

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { usePlaybackStore } from "../../store/playback";
+import { usePlaybackStore, getEffectiveSteps } from "../../store/playback";
 import { SCENARIOS_MAP } from "../../data/scenarios";
 
 function PurpleTriangle() {
@@ -23,9 +23,10 @@ export function CaptionPanel() {
   const caption = usePlaybackStore((s) => s.caption);
   const scenarioId = usePlaybackStore((s) => s.scenarioId);
   const currentStepIndex = usePlaybackStore((s) => s.currentStepIndex);
+  const helpMode = usePlaybackStore((s) => s.helpMode);
 
   const scenario = scenarioId ? SCENARIOS_MAP[scenarioId] : undefined;
-  const stepCount = scenario?.steps.length ?? 0;
+  const stepCount = scenario ? getEffectiveSteps(scenario, helpMode).length : 0;
   const stepLabel =
     currentStepIndex >= 0
       ? String(currentStepIndex + 1).padStart(2, "0")

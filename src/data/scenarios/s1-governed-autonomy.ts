@@ -1,4 +1,28 @@
-import type { Scenario } from "./types";
+import type { Scenario, ScenarioStep } from "./types";
+
+export const HELP_SLIDES: ScenarioStep[] = [
+  {
+    id: "s1-slide-0",
+    kind: "slide",
+    slideImage: "/slides/explanation.png",
+    caption: "A premium call, quietly downgraded",
+    durationMs: 6000,
+  },
+  {
+    id: "s1-slide-1",
+    kind: "slide",
+    slideImage: "/slides/identity.png",
+    caption: "Identity, proven on the wire",
+    durationMs: 6000,
+  },
+  {
+    id: "s1-slide-2",
+    kind: "slide",
+    slideImage: "/slides/agent-chain.png",
+    caption: "The agent chain — governed autonomy",
+    durationMs: 6000,
+  },
+];
 
 export const s1: Scenario = {
   id: "S1",
