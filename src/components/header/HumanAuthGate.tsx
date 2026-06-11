@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { usePlaybackStore } from "../../store/playback";
+import { usePlaybackStore, getEffectiveSteps } from "../../store/playback";
 import { SCENARIOS_MAP } from "../../data/scenarios";
 
 const LABEL_STYLE: React.CSSProperties = {
@@ -13,15 +13,17 @@ export function HumanAuthGate() {
   const scenarioId = usePlaybackStore((s) => s.scenarioId);
   const currentStepIndex = usePlaybackStore((s) => s.currentStepIndex);
   const hitlStatus = usePlaybackStore((s) => s.hitlStatus);
+  const helpMode = usePlaybackStore((s) => s.helpMode);
   const approveHITL = usePlaybackStore((s) => s.approveHITL);
   const denyHITL = usePlaybackStore((s) => s.denyHITL);
 
   const step = useMemo(() => {
     if (!scenarioId || currentStepIndex < 0) return null;
     const scenario = SCENARIOS_MAP[scenarioId];
-    const s = scenario?.steps[currentStepIndex];
+    if (!scenario) return null;
+    const s = getEffectiveSteps(scenario, helpMode)[currentStepIndex];
     return s?.kind === "hitl" ? s : null;
-  }, [scenarioId, currentStepIndex]);
+  }, [scenarioId, currentStepIndex, helpMode]);
 
   if (!step) return null;
 

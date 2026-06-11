@@ -1,4 +1,4 @@
-import { usePlaybackStore } from "../../store/playback";
+import { usePlaybackStore, getEffectiveSteps } from "../../store/playback";
 import { SCENARIOS_MAP } from "../../data/scenarios";
 import type React from "react";
 
@@ -18,7 +18,7 @@ export function PlaybackControls() {
   const setSpeed = usePlaybackStore((s) => s.setSpeed);
 
   const scenario = scenarioId ? SCENARIOS_MAP[scenarioId] : undefined;
-  const stepCount = scenario?.steps.length ?? 0;
+  const stepCount = scenario ? getEffectiveSteps(scenario, helpMode).length : 0;
   const atEnd = stepCount > 0 && currentStepIndex >= stepCount - 1;
   const hasScenario = scenarioId !== null && scenario !== undefined;
   const hitlBlocking = hitlStatus === "pending" || hitlStatus === "denied";

@@ -415,9 +415,9 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
   },
 
   approveHITL: () => {
-    const { scenarioId, currentStepIndex } = get();
+    const { scenarioId, currentStepIndex, helpMode } = get();
     const scenario = scenarioId ? SCENARIOS_MAP[scenarioId] : null;
-    const step = scenario?.steps[currentStepIndex];
+    const step = scenario ? getEffectiveSteps(scenario, helpMode)[currentStepIndex] : undefined;
     const actorId = step?.actor;
     set((s) => ({
       hitlStatus: "approved",
@@ -426,9 +426,9 @@ export const usePlaybackStore = create<PlaybackStore>()((set, get) => ({
   },
 
   denyHITL: () => {
-    const { scenarioId, currentStepIndex } = get();
+    const { scenarioId, currentStepIndex, helpMode } = get();
     const scenario = scenarioId ? SCENARIOS_MAP[scenarioId] : null;
-    const step = scenario?.steps[currentStepIndex];
+    const step = scenario ? getEffectiveSteps(scenario, helpMode)[currentStepIndex] : undefined;
     const actorId = step?.actor;
     set((s) => ({
       hitlStatus: "denied",
